@@ -23,7 +23,23 @@ func init() {
 }
 
 func main() {
+	c, err := NewConsumer(*uri, *exchange, *exchangeType, *queue, *bindingKey, *consumerTag)
+	if err != nil {
+		log.Fatalf("%s", err)
+	}
 
+	if *lifetime > 0 {
+		log.Printf("Running for %s", *lifetime)
+	} else {
+		log.Printf("Running forever")
+		select {}
+	}
+
+	log.Printf("Shutting down")
+
+	if err := c.Shutdown(); err != nil {
+		log.Fatalf("Error during shutdown: %s", err)
+	}
 }
 
 type Consumer struct {
