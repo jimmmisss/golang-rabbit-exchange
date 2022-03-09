@@ -60,4 +60,30 @@ func publish(amqpURI, exchange, exchangeType, routingKey, body string, reliable 
 		defer confirmOne(confirms)
 	}
 
+	log.Printf("Declare exchange, publishig %dB body (%q)", len(body), body)
+	if err = ch.Publish(
+		exchangeType,
+		routingKey,
+		false,
+		false,
+		amqp.Publishing{
+			Headers:         amqp.Table{},
+			ContentType:     "text/plain",
+			ContentEncoding: "",
+			Body:            []byte(body),
+			DeliveryMode:    amqp.Transient,
+			Priority:        0,
+		}); err != nil {
+		return fmt.Errorf("Exchange publish: %s", err)
+	}
+	return nil
+}
+
+func confirmOne(confirms <-chan amqp.Confirmation) {
+	log.Printf("Waiting for confirmation of the publishing")
+	if confirmed := <-confirms; confirmed.Ack {
+		log.Printf("Confirmed delivery with delivery tag: %d", confirmed.DeliveryTag)
+	} else {
+		log.Printf("Failed delivery of delivery tag: %d", confirmed.DeliveryTag)
+	}
 }
