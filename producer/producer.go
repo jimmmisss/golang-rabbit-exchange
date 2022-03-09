@@ -13,7 +13,7 @@ var (
 	exchangeType = flag.String("exchange-type", "direct", "Exchange type - direct|fanout|topic|x-custom")
 	routingKey   = flag.String("key", "test-key", "AMQP routing key")
 	body         = flag.String("body", "foobar", "Body of message")
-	reliable     = flag.String("reliable", "true", "Wait for the publisher confirmation before exiting")
+	reliable     = flag.Bool("reliable", true, "Wait for the publisher confirmation before exiting")
 )
 
 func init() {
@@ -21,7 +21,10 @@ func init() {
 }
 
 func main() {
-
+	if err := publish(*uri, *exchangeName, *exchangeType, *routingKey, *body, *reliable); err != nil {
+		log.Fatalf("%s", err)
+	}
+	log.Printf("published %dB OK", len(*body))
 }
 
 func publish(amqpURI, exchange, exchangeType, routingKey, body string, reliable bool) error {
